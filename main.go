@@ -27,28 +27,28 @@ import (
 func main() {
 	os.Setenv("TZ", "Asia/Bangkok")
 
-	godotenv_env := config.LoadDotEnvConfig()
+	godotenvEnv := config.LoadDotEnvConfig()
 	slog.Info("ENV has been loaded")
 
-	kube_rest_cfg, err := config.LoadKubeRestConfig()
+	kubeRestCfg, err := config.LoadKubeRestConfig()
 	if err != nil {
 		log.Fatalf("cannot create K8s config: %v", err)
 	}
 
-	cs, err := kubernetes.NewForConfig(kube_rest_cfg)
+	cs, err := kubernetes.NewForConfig(kubeRestCfg)
 	if err != nil {
 		log.Fatalf("cannot create K8s ClientSet: %v", err)
 	}
-	mcs, err := metrics.NewForConfig(kube_rest_cfg)
+	mcs, err := metrics.NewForConfig(kubeRestCfg)
 	if err != nil {
 		log.Fatalf("cannot create K8s MetricsClientSet: %v", err)
 	}
 
-	podViewingService := service.NewPodViewingService(cs, godotenv_env.KubeConfig)
+	podViewingService := service.NewPodViewingService(cs, godotenvEnv.KubeConfig)
 	podViewingHandler := handlers.NewPodViewingHandler(podViewingService)
-	metricsViewingService := service.NewMetricsViewingService(cs, mcs, godotenv_env.KubeConfig)
+	metricsViewingService := service.NewMetricsViewingService(cs, mcs, godotenvEnv.KubeConfig)
 	metricsViewingHandler := handlers.NewMetricsViewingHandler(metricsViewingService)
-	logReadingService := service.NewLogReadingService(cs, godotenv_env.KubeConfig)
+	logReadingService := service.NewLogReadingService(cs, godotenvEnv.KubeConfig)
 	logReadingHandler := handlers.NewLogReadingHandler(logReadingService)
 
 	app := fiber.New(fiber.Config{
@@ -77,7 +77,7 @@ func main() {
 	})
 
 	routes.SetupRoutes(app, podViewingHandler, metricsViewingHandler, logReadingHandler)
-	port := godotenv_env.ServerConfig.Port
+	port := godotenvEnv.ServerConfig.Port
 	fmt.Println("Server is running on port " + port)
 	app.Listen("localhost:" + port)
 }

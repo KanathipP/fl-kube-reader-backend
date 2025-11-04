@@ -33,7 +33,7 @@ func LoadDotEnvConfig() GoDotEnvConfig {
 
 	serverConfig := ServerConfig{
 		FrontendURL: Get("FRONTEND_URL", "http://localhost:8080"),
-		Port:        Get("PORT", "3001"),
+		Port:        Get("PORT", "3000"),
 	}
 
 	config := GoDotEnvConfig{
