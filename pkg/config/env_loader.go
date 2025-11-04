@@ -20,10 +20,10 @@ type KubeConfig struct {
 
 type ServerConfig struct {
 	FrontendURL string
-	Port        int
+	Port        string
 }
 
-func Load() GoDotEnvConfig {
+func LoadDotEnvConfig() GoDotEnvConfig {
 	_ = godotenv.Load()
 
 	kubeConfig := KubeConfig{
@@ -33,7 +33,7 @@ func Load() GoDotEnvConfig {
 
 	serverConfig := ServerConfig{
 		FrontendURL: Get("FRONTEND_URL", "http://localhost:8080"),
-		Port:        GetInt("PORT", 3000),
+		Port:        Get("PORT", "3001"),
 	}
 
 	config := GoDotEnvConfig{

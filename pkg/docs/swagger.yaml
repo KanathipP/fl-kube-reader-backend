@@ -1,0 +1,172 @@
+basePath: /api/v1
+definitions:
+  response.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Kubernetes Pod & Node metrics viewer backend
+  title: fl-kube-reader-backend API
+  version: "1.0"
+paths:
+  /{any}:
+    get:
+      description: Handles unknown routes and returns 404 JSON payload
+      responses:
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Not Found handler
+      tags:
+      - system
+  /healthz:
+    get:
+      description: Basic health endpoint to verify service is alive
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health check
+      tags:
+      - system
+  /logs/pod:
+    get:
+      consumes:
+      - application/json
+      description: Returns container logs for a pod. Supports tailing N lines and
+        fetching previous container logs.
+      parameters:
+      - description: Pod name
+        in: query
+        name: pod
+        required: true
+        type: string
+      - description: Container name (optional)
+        in: query
+        name: container
+        type: string
+      - description: 'Tail last N lines (default: 0 = all)'
+        in: query
+        name: tail
+        type: integer
+      - description: Get logs from the previously terminated container
+        in: query
+        name: previous
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Log payload
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get pod logs
+      tags:
+      - logs
+  /metrics-viewing/nodes/usage:
+    get:
+      consumes:
+      - application/json
+      description: Returns CPU & memory usage and allocatable resources for all nodes
+        in the cluster.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Nodes usage list
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get cluster node resource usage
+      tags:
+      - metrics
+  /metrics-viewing/pods/usage:
+    get:
+      consumes:
+      - application/json
+      description: Returns CPU (milli) + memory (bytes) usage for a specific pod.
+        If container is provided, returns usage only for that container.
+      parameters:
+      - description: Pod name
+        in: query
+        name: pod
+        required: true
+        type: string
+      - description: Container name (optional)
+        in: query
+        name: container
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Pod usage
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Get pod resource usage
+      tags:
+      - metrics
+  /pod-viewing:
+    get:
+      consumes:
+      - application/json
+      description: Returns pods filtered by namespace, component, and instance
+      parameters:
+      - description: 'Namespace (default: default)'
+        in: query
+        name: namespace
+        type: string
+      - description: 'K8s component label: app.kubernetes.io/component'
+        in: query
+        name: component
+        type: string
+      - description: 'K8s instance label: app.kubernetes.io/instance'
+        in: query
+        name: instance
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of pods
+          schema:
+            items:
+              additionalProperties: true
+              type: object
+            type: array
+        "500":
+          description: Failed to retrieve pods
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: List pods
+      tags:
+      - pods
+swagger: "2.0"
